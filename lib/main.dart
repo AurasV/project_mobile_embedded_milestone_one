@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'login.dart';
 import 'signup.dart';
+import 'dashboard.dart';
+import 'add_prescription.dart';
+import 'add_pills_form.dart';
+import 'settings.dart';
+import 'profile.dart';
 
 void main() {
   runApp(const HealthUpApp());
@@ -14,8 +19,8 @@ class HealthUpApp extends StatelessWidget {
     return MaterialApp(
       title: 'HealthUp',
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFf8f9fc), // very light background
-        primaryColor: const Color(0xFF4e5ca6), // main accent
+        scaffoldBackgroundColor: const Color(0xFFf8f9fc),
+        primaryColor: const Color(0xFF4e5ca6),
         colorScheme: const ColorScheme.light(
           primary: Color(0xFF4e5ca6),
           secondary: Color(0xFF5865b0),
@@ -58,6 +63,11 @@ class HealthUpApp extends StatelessWidget {
       routes: {
         '/signup': (context) => const SignUpScreen(),
         '/login': (context) => const LoginScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
+        '/add_prescription': (context) => const AddPrescriptionScreen(),
+        '/add_pills_form': (context) => const AddPillsFormScreen(),
+        '/settings': (context) => const SettingsScreen(),
+        '/profile': (context) => const ProfileScreen(),
       },
     );
   }

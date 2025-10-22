@@ -43,6 +43,7 @@ class LoginScreen extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Logged in successfully (mock)')),
                     );
+                    Navigator.pushReplacementNamed(context, '/dashboard');
                   },
                   child: const Text("Login", style: TextStyle(fontSize: 18)),
                 ),

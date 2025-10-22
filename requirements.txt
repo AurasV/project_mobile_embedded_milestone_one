@@ -1,0 +1,11 @@
+overall
+
+MediTrack: Personal Health & Medication Reminder
+
+Users Log in and store health record securely.
+Set meedication schedules -> trigger local notifications.
+Camera/Storage permissions for uploading pescriptions.
+Secure data with Firebase App Check & Firestore rules.
+Routing between dashboard, reminders, health logs.
+
+Milestone 1: Build basic UI with mocked data
