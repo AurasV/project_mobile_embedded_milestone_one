@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'add_pills_form.dart';
+import 'pills_provider.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
   final String currentRoute;
@@ -32,9 +35,22 @@ class AppBottomNavigationBar extends StatelessWidget {
               isActive: currentRoute == '/add_prescription',
             ),
             FloatingActionButton(
-              onPressed: () {
+              onPressed: () async {
                 if (currentRoute != '/add_pills_form') {
-                  Navigator.pushNamed(context, '/add_pills_form');
+                  final result = await Navigator.pushNamed(context, '/add_pills_form');
+                  // If we got pill data back, add it to the provider
+                  if (result != null && result is PillData) {
+                    if (context.mounted) {
+                      Provider.of<PillsProvider>(context, listen: false).addPill(result);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Pill added successfully!')),
+                      );
+                      // Navigate to dashboard if not already there
+                      if (currentRoute != '/dashboard') {
+                        Navigator.pushReplacementNamed(context, '/dashboard');
+                      }
+                    }
+                  }
                 }
               },
               backgroundColor: theme.colorScheme.primary,

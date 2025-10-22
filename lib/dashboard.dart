@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'add_pills_form.dart';
 import 'app_bottom_nav.dart';
+import 'pills_provider.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -9,17 +11,12 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
-  // Local storage for pills
-  final List<PillData> _userPills = [];
-
+class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
   Future<void> _navigateToAddPills() async {
     final result = await Navigator.pushNamed(context, '/add_pills_form');
     if (result != null && result is PillData) {
-      setState(() {
-        _userPills.add(result);
-      });
       if (mounted) {
+        Provider.of<PillsProvider>(context, listen: false).addPill(result);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Pill added successfully!')),
         );
@@ -116,52 +113,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: _userPills.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.medication_outlined,
-                            size: 80,
-                            color: Colors.grey[400],
+              child: Consumer<PillsProvider>(
+                builder: (context, pillsProvider, child) {
+                  final userPills = pillsProvider.pills;
+                  return userPills.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.medication_outlined,
+                                size: 80,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No medications added yet',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Tap "Add Medicine" to get started',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[500],
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No medications added yet',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Tap "Add Medicine" to get started',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView(
-                      children: [
-                        // User-added pills
-                        ..._userPills.map((pill) {
-                          final timeStr = '${pill.time.hour.toString().padLeft(2, '0')}:${pill.time.minute.toString().padLeft(2, '0')}';
-                          final pillCountStr = '${pill.amount} ${pill.type}';
-                          return _buildScheduleItem(
-                            context,
-                            timeStr,
-                            pill.name,
-                            '${pill.duration} days',
-                            pillCountStr,
-                          );
-                        }).toList(),
-                      ],
-                    ),
+                        )
+                      : ListView(
+                          children: [
+                            // User-added pills
+                            ...userPills.map((pill) {
+                              final timeStr = '${pill.time.hour.toString().padLeft(2, '0')}:${pill.time.minute.toString().padLeft(2, '0')}';
+                              final pillCountStr = '${pill.amount} ${pill.type}';
+                              return _buildScheduleItem(
+                                context,
+                                timeStr,
+                                pill.name,
+                                '${pill.duration} days',
+                                pillCountStr,
+                              );
+                            }).toList(),
+                          ],
+                        );
+                },
+              ),
             )
           ],
         ),

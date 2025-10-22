@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'login.dart';
 import 'signup.dart';
 import 'dashboard.dart';
@@ -6,6 +7,7 @@ import 'add_prescription.dart';
 import 'add_pills_form.dart';
 import 'settings.dart';
 import 'profile.dart';
+import 'pills_provider.dart';
 
 void main() {
   runApp(const HealthUpApp());
@@ -16,9 +18,11 @@ class HealthUpApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'HealthUp',
-      theme: ThemeData(
+    return ChangeNotifierProvider(
+      create: (context) => PillsProvider(),
+      child: MaterialApp(
+        title: 'HealthUp',
+        theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFFf8f9fc),
         primaryColor: const Color(0xFF4e5ca6),
         colorScheme: const ColorScheme.light(
@@ -69,6 +73,7 @@ class HealthUpApp extends StatelessWidget {
         '/settings': (context) => const SettingsScreen(),
         '/profile': (context) => const ProfileScreen(),
       },
+      ),
     );
   }
 }
