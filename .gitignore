@@ -44,11 +44,12 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Firebase config files (NEVER commit these!)
+# Firebase config files 
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 lib/firebase_options.dart
 web/firebase-config.js
+firebase.json
 
 # Environment files
 .env
