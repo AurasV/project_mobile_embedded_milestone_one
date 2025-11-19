@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'login.dart';
 import 'signup.dart';
 import 'dashboard.dart';
@@ -8,8 +10,14 @@ import 'add_pills_form.dart';
 import 'settings.dart';
 import 'profile.dart';
 import 'pills_provider.dart';
+import 'medication_detail.dart';
+import 'edit_medication.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const HealthUpApp());
 }
 
@@ -28,11 +36,9 @@ class HealthUpApp extends StatelessWidget {
         colorScheme: const ColorScheme.light(
           primary: Color(0xFF4e5ca6),
           secondary: Color(0xFF5865b0),
-          background: Color(0xFFf8f9fc),
           surface: Color(0xFFdde0ef),
           onPrimary: Colors.white,
           onSecondary: Colors.white,
-          onBackground: Color(0xFF161a2e),
           onSurface: Color(0xFF161a2e),
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -64,6 +70,21 @@ class HealthUpApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       home: const LoginScreen(),
+      onGenerateRoute: (settings) {
+        if (settings.name == '/medication_detail') {
+          final medication = settings.arguments as PillData;
+          return MaterialPageRoute(
+            builder: (context) => MedicationDetailScreen(medication: medication),
+          );
+        }
+        if (settings.name == '/edit_medication') {
+          final medication = settings.arguments as PillData;
+          return MaterialPageRoute(
+            builder: (context) => EditMedicationScreen(medication: medication),
+          );
+        }
+        return null;
+      },
       routes: {
         '/signup': (context) => const SignUpScreen(),
         '/login': (context) => const LoginScreen(),

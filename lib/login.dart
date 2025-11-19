@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'services/firebase_service.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -7,6 +8,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
+    final firebaseService = FirebaseService();
 
     return Scaffold(
       body: Center(
@@ -39,11 +41,25 @@ class LoginScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Logged in successfully (mock)')),
-                    );
-                    Navigator.pushReplacementNamed(context, '/dashboard');
+                  onPressed: () async {
+                    try {
+                      await firebaseService.signIn(
+                        emailController.text.trim(),
+                        passwordController.text.trim(),
+                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Logged in successfully!')),
+                        );
+                        Navigator.pushReplacementNamed(context, '/dashboard');
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Login failed: ${e.toString()}')),
+                        );
+                      }
+                    }
                   },
                   child: const Text("Login", style: TextStyle(fontSize: 18)),
                 ),

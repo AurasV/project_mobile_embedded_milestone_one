@@ -12,7 +12,6 @@ class AddPrescriptionScreen extends StatefulWidget {
 class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
   File? _capturedImage;
   final ImagePicker _picker = ImagePicker();
-  bool _isLoadingCamera = false;
   bool _showingChoices = true;
 
   @override
@@ -37,10 +36,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
   Future<void> _takePhoto() async {
     if (!mounted) return;
     
-    setState(() {
-      _isLoadingCamera = true;
-    });
-    
     try {
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,
@@ -52,12 +47,10 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
       if (photo != null) {
         setState(() {
           _capturedImage = File(photo.path);
-          _isLoadingCamera = false;
         });
       } else {
         // Cancelled
         setState(() {
-          _isLoadingCamera = false;
           _showingChoices = true;
         });
       }
@@ -65,7 +58,6 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
       debugPrint('Error taking photo: $e');
       if (mounted) {
         setState(() {
-          _isLoadingCamera = false;
           _showingChoices = true;
         });
       }
@@ -79,7 +71,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     // Success screen
     if (_capturedImage != null) {
       return Scaffold(
-        backgroundColor: theme.colorScheme.background,
+        backgroundColor: theme.colorScheme.surface,
         appBar: AppBar(
           title: const Text('New prescription'),
           elevation: 0,
@@ -181,7 +173,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     // Show choice screen
     if (_showingChoices) {
       return Scaffold(
-        backgroundColor: theme.colorScheme.background,
+        backgroundColor: theme.colorScheme.surface,
         appBar: AppBar(
           title: const Text('New prescription'),
           elevation: 0,
@@ -212,10 +204,9 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
               ),
               const SizedBox(height: 48),
               // Camera button
-              Container(
+              SizedBox(
                 width: double.infinity,
                 height: 140,
-                margin: const EdgeInsets.only(bottom: 20),
                 child: ElevatedButton(
                   onPressed: () {
                     setState(() {
@@ -251,7 +242,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                 ),
               ),
               // Gallery button
-              Container(
+              SizedBox(
                 width: double.infinity,
                 height: 140,
                 child: ElevatedButton(
@@ -310,19 +301,16 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
           onPressed: () {
             setState(() {
               _showingChoices = true;
-              _isLoadingCamera = false;
             });
           },
         ),
       ),
       body: Center(
-        child: _isLoadingCamera
-            ? const CircularProgressIndicator(color: Colors.white)
-            : const Icon(
-                Icons.camera_alt,
-                size: 80,
-                color: Colors.white54,
-              ),
+        child: const Icon(
+          Icons.camera_alt,
+          size: 80,
+          color: Colors.white54,
+        ),
       ),
     );
   }

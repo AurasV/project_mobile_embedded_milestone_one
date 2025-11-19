@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "455066808681",
+    "project_id": "mec-project-41e2c",
+    "storage_bucket": "mec-project-41e2c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455066808681:android:1bb6aa372871e6a7eecdf8",
+        "android_client_info": {
+          "package_name": "com.example.project_mobile_embedded_milestone_one"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIuzV9k7qkv1F3--X_qElClTkKlelaJII"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

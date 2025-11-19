@@ -1,109 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'add_pills_form.dart';
+import 'pills_provider.dart';
 
-class PillData {
-  final String? id;
-  final String name;
-  final String type;
-  final int amount;
-  final int duration;
-  final TimeOfDay time;
-  final DateTime startDate;
-  final String frequency; // 'daily', 'hourly', 'days'
-  final int frequencyValue; // 1 for daily, or X for every X hours/days
+class EditMedicationScreen extends StatefulWidget {
+  final PillData medication;
 
-  PillData({
-    this.id,
-    required this.name,
-    required this.type,
-    required this.amount,
-    required this.duration,
-    required this.time,
-    required this.startDate,
-    this.frequency = 'daily',
-    this.frequencyValue = 1,
-  });
-
-  // Helper method to calculate next alarm time
-  DateTime? getNextAlarmTime() {
-    final now = DateTime.now();
-    DateTime scheduledTime = DateTime(
-      startDate.year,
-      startDate.month,
-      startDate.day,
-      time.hour,
-      time.minute,
-    );
-
-    // If start date is in the future, return first scheduled time
-    if (scheduledTime.isAfter(now)) {
-      return scheduledTime;
-    }
-
-    // Calculate next occurrence based on frequency
-    switch (frequency) {
-      case 'daily':
-        // Schedule for today if not passed, otherwise tomorrow
-        scheduledTime = DateTime(now.year, now.month, now.day, time.hour, time.minute);
-        if (scheduledTime.isBefore(now)) {
-          scheduledTime = scheduledTime.add(const Duration(days: 1));
-        }
-        break;
-
-      case 'hourly':
-        // Schedule every X hours
-        while (scheduledTime.isBefore(now)) {
-          scheduledTime = scheduledTime.add(Duration(hours: frequencyValue));
-        }
-        break;
-
-      case 'days':
-        // Schedule every X days at the specified time
-        while (scheduledTime.isBefore(now)) {
-          scheduledTime = scheduledTime.add(Duration(days: frequencyValue));
-        }
-        break;
-    }
-
-    // Check if within duration
-    final endDate = startDate.add(Duration(days: duration));
-    if (scheduledTime.isAfter(endDate)) {
-      return null; // Medication period has ended
-    }
-
-    return scheduledTime;
-  }
-
-  // Helper method to get frequency description
-  String getFrequencyDescription() {
-    switch (frequency) {
-      case 'daily':
-        return 'Daily';
-      case 'hourly':
-        return 'Every $frequencyValue hour${frequencyValue > 1 ? 's' : ''}';
-      case 'days':
-        return 'Every $frequencyValue day${frequencyValue > 1 ? 's' : ''}';
-      default:
-        return 'Daily';
-    }
-  }
-}
-
-class AddPillsFormScreen extends StatefulWidget {
-  const AddPillsFormScreen({super.key});
+  const EditMedicationScreen({super.key, required this.medication});
 
   @override
-  State<AddPillsFormScreen> createState() => _AddPillsFormScreenState();
+  State<EditMedicationScreen> createState() => _EditMedicationScreenState();
 }
 
-class _AddPillsFormScreenState extends State<AddPillsFormScreen> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _typeController = TextEditingController();
-  int _pillAmount = 2;
-  int _durationDays = 14;
-  TimeOfDay _selectedTime = const TimeOfDay(hour: 6, minute: 0);
-  DateTime _startDate = DateTime.now();
-  String _frequency = 'daily';
-  int _frequencyValue = 1;
+class _EditMedicationScreenState extends State<EditMedicationScreen> {
+  late TextEditingController _nameController;
+  late TextEditingController _typeController;
+  late int _pillAmount;
+  late int _durationDays;
+  late TimeOfDay _selectedTime;
+  late DateTime _startDate;
+  late String _frequency;
+  late int _frequencyValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.medication.name);
+    _typeController = TextEditingController(text: widget.medication.type);
+    _pillAmount = widget.medication.amount;
+    _durationDays = widget.medication.duration;
+    _selectedTime = widget.medication.time;
+    _startDate = widget.medication.startDate;
+    _frequency = widget.medication.frequency;
+    _frequencyValue = widget.medication.frequencyValue;
+  }
 
   void _incrementAmount() {
     setState(() {
@@ -243,22 +173,17 @@ class _AddPillsFormScreenState extends State<AddPillsFormScreen> {
     }
   }
 
-  void _addPills() {
-    if (_nameController.text.isEmpty) {
+  Future<void> _updateMedication() async {
+    if (_nameController.text.isEmpty || _typeController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter pill name')),
-      );
-      return;
-    }
-    if (_typeController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter pill type (e.g., pills, tablets, injection)')),
+        const SnackBar(content: Text('Please fill in all fields')),
       );
       return;
     }
 
-    final pill = PillData(
-      id: null, // ID will be generated by Firestore
+    // Create updated pill object with SAME ID
+    final updatedPill = PillData(
+      id: widget.medication.id, // Keep the original ID!
       name: _nameController.text,
       type: _typeController.text,
       amount: _pillAmount,
@@ -269,7 +194,23 @@ class _AddPillsFormScreenState extends State<AddPillsFormScreen> {
       frequencyValue: _frequencyValue,
     );
 
-    Navigator.pop(context, pill);
+    try {
+      await Provider.of<PillsProvider>(context, listen: false).updatePill(updatedPill);
+      
+      if (mounted) {
+        Navigator.pop(context); // Close edit screen
+        Navigator.pop(context); // Close detail screen to go back to dashboard
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Medication updated successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -277,7 +218,7 @@ class _AddPillsFormScreenState extends State<AddPillsFormScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Medication'),
+        title: const Text('Edit Medication'),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -473,7 +414,6 @@ class _AddPillsFormScreenState extends State<AddPillsFormScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Frequency dropdown
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
@@ -499,7 +439,6 @@ class _AddPillsFormScreenState extends State<AddPillsFormScreen> {
                 ),
                 if (_frequency != 'daily') ...[
                   const SizedBox(width: 16),
-                  // Frequency
                   Container(
                     decoration: BoxDecoration(
                       color: theme.colorScheme.primary.withValues(alpha: 0.1),
@@ -562,7 +501,7 @@ class _AddPillsFormScreenState extends State<AddPillsFormScreen> {
                 onPressed: _selectTime,
                 icon: Icon(Icons.access_time, color: theme.colorScheme.primary),
                 label: Text(
-                  'Choose Time',
+                  'Change time',
                   style: TextStyle(color: theme.colorScheme.primary),
                 ),
               ),
@@ -572,11 +511,11 @@ class _AddPillsFormScreenState extends State<AddPillsFormScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _addPills,
+                onPressed: _updateMedication,
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16.0),
                   child: Text(
-                    'Add Medication',
+                    'Update Medication',
                     style: TextStyle(fontSize: 18),
                   ),
                 ),

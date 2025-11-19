@@ -54,9 +54,9 @@ class AppBottomNavigationBar extends StatelessWidget {
                 }
               },
               backgroundColor: theme.colorScheme.primary,
-              child: const Icon(Icons.medication, size: 24),
               elevation: 2,
               mini: true,
+              child: const Icon(Icons.medication, size: 24),
             ),
             _buildNavItem(
               context,

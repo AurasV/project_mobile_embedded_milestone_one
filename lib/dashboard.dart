@@ -12,6 +12,15 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
+  @override
+  void initState() {
+    super.initState();
+    // Start listening to Firebase medications
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<PillsProvider>(context, listen: false).listenToMedications();
+    });
+  }
+
   Future<void> _navigateToAddPills() async {
     final result = await Navigator.pushNamed(context, '/add_pills_form');
     if (result != null && result is PillData) {
@@ -24,65 +33,83 @@ class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
     }
   }
 
-  Widget _buildScheduleItem(BuildContext context, String time, String title,
-      String subtitle, String pillCount) {
+  Widget _buildScheduleItem(BuildContext context, PillData pill) {
     final theme = Theme.of(context);
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.15),
-              shape: BoxShape.circle,
+    final nextAlarm = pill.getNextAlarmTime();
+    final timeStr = '${pill.time.hour.toString().padLeft(2, '0')}:${pill.time.minute.toString().padLeft(2, '0')}';
+    final pillCountStr = '${pill.amount} ${pill.type}';
+    
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/medication_detail',
+          arguments: pill,
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.medication, color: theme.colorScheme.primary),
             ),
-            child: Icon(Icons.medication, color: theme.colorScheme.primary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(timeStr,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 4),
+                  Text(pill.name, style: const TextStyle(fontSize: 14)),
+                  const SizedBox(height: 2),
+                  Text(pill.getFrequencyDescription(),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 11)),
+                  if (nextAlarm != null)
+                    Text(
+                      'Next: ${nextAlarm.day}/${nextAlarm.month} ${nextAlarm.hour}:${nextAlarm.minute.toString().padLeft(2, '0')}',
+                      style: TextStyle(color: Colors.grey[500], fontSize: 10),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(time,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 6),
-                Text(title, style: const TextStyle(fontSize: 14)),
+                Text(pillCountStr,
+                    style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12)),
                 const SizedBox(height: 4),
-                Text(subtitle,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                Text('${pill.duration} days',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 11)),
               ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(pillCount,
-                  style: TextStyle(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-            ],
-          )
-        ],
+            )
+          ],
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        return true;
-      },
+    return PopScope(
+      canPop: true,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Schedule'),
@@ -147,20 +174,7 @@ class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
                           ),
                         )
                       : ListView(
-                          children: [
-                            // User-added pills
-                            ...userPills.map((pill) {
-                              final timeStr = '${pill.time.hour.toString().padLeft(2, '0')}:${pill.time.minute.toString().padLeft(2, '0')}';
-                              final pillCountStr = '${pill.amount} ${pill.type}';
-                              return _buildScheduleItem(
-                                context,
-                                timeStr,
-                                pill.name,
-                                '${pill.duration} days',
-                                pillCountStr,
-                              );
-                            }).toList(),
-                          ],
+                          children: userPills.map((pill) => _buildScheduleItem(context, pill)).toList(),
                         );
                 },
               ),

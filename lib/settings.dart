@@ -12,7 +12,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
   bool _soundEnabled = true;
   bool _vibrationEnabled = false;
-  String _theme = 'light';
 
   Widget _buildSettingItem({
     required IconData icon,
@@ -33,7 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: theme.colorScheme.primary, size: 24),
@@ -70,10 +69,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.pushReplacementNamed(context, '/dashboard');
-        return false;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          Navigator.pushReplacementNamed(context, '/dashboard');
+        }
       },
       child: Scaffold(
         appBar: AppBar(
@@ -105,7 +106,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _notificationsEnabled = value;
                   });
                 },
-                activeColor: theme.colorScheme.primary,
+                activeTrackColor: theme.colorScheme.primary,
               ),
             ),
             _buildSettingItem(
@@ -119,7 +120,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _soundEnabled = value;
                   });
                 },
-                activeColor: theme.colorScheme.primary,
+                activeTrackColor: theme.colorScheme.primary,
               ),
             ),
             _buildSettingItem(
@@ -133,7 +134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _vibrationEnabled = value;
                   });
                 },
-                activeColor: theme.colorScheme.primary,
+                activeTrackColor: theme.colorScheme.primary,
               ),
             ),
             const SizedBox(height: 24),
@@ -148,7 +149,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSettingItem(
               icon: Icons.palette,
               title: 'Theme',
-              subtitle: _theme == 'light' ? 'Light Mode' : 'Dark Mode',
+              subtitle: 'Light Mode',
               trailing: IconButton(
                 icon: const Icon(Icons.chevron_right),
                 onPressed: () {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'services/firebase_service.dart';
 
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key});
@@ -9,6 +10,7 @@ class SignUpScreen extends StatelessWidget {
     final usernameController = TextEditingController();
     final passwordController = TextEditingController();
     final confirmPasswordController = TextEditingController();
+    final firebaseService = FirebaseService();
 
     return Scaffold(
       body: Center(
@@ -61,11 +63,32 @@ class SignUpScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Account created (mock)')),
-                    );
-                    Navigator.pushReplacementNamed(context, '/login');
+                  onPressed: () async {
+                    if (passwordController.text != confirmPasswordController.text) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Passwords do not match')),
+                      );
+                      return;
+                    }
+
+                    try {
+                      await firebaseService.signUp(
+                        emailController.text.trim(),
+                        passwordController.text.trim(),
+                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Account created successfully!')),
+                        );
+                        Navigator.pushReplacementNamed(context, '/login');
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Signup failed: ${e.toString()}')),
+                        );
+                      }
+                    }
                   },
                   child: const Text("Sign up", style: TextStyle(fontSize: 18)),
                 ),
