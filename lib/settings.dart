@@ -69,6 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -98,7 +99,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSettingItem(
               icon: Icons.notifications,
               title: 'Push Notifications',
-              subtitle: 'Receive medication reminders',
+              subtitle: 'Receive medication reminders (Coming Soon)',
               trailing: Switch(
                 value: _notificationsEnabled,
                 onChanged: (value) {
@@ -112,7 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSettingItem(
               icon: Icons.volume_up,
               title: 'Sound',
-              subtitle: 'Play sound for reminders',
+              subtitle: 'Play sound for reminders (Coming Soon)',
               trailing: Switch(
                 value: _soundEnabled,
                 onChanged: (value) {
@@ -126,7 +127,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSettingItem(
               icon: Icons.vibration,
               title: 'Vibration',
-              subtitle: 'Vibrate for reminders',
+              subtitle: 'Vibrate for reminders (Coming Soon)',
               trailing: Switch(
                 value: _vibrationEnabled,
                 onChanged: (value) {

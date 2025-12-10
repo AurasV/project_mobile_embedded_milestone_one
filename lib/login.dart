@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'services/firebase_service.dart';
+import 'services/preferences_service.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
-    final firebaseService = FirebaseService();
+  State<LoginScreen> createState() => _LoginScreenState();
+}
 
+class _LoginScreenState extends State<LoginScreen> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final firebaseService = FirebaseService();
+  final prefsService = PreferencesService();
+  bool stayLoggedIn = false;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -37,16 +45,40 @@ class LoginScreen extends StatelessWidget {
                   labelText: 'Password',
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Checkbox(
+                    value: stayLoggedIn,
+                    onChanged: (value) {
+                      setState(() {
+                        stayLoggedIn = value ?? false;
+                      });
+                    },
+                  ),
+                  const Text('Stay logged in'),
+                ],
+              ),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
                     try {
-                      await firebaseService.signIn(
+                      final userCredential = await firebaseService.signIn(
                         emailController.text.trim(),
                         passwordController.text.trim(),
                       );
+                      
+                      // Save login preference
+                      await prefsService.setStayLoggedIn(stayLoggedIn);
+                      if (stayLoggedIn) {
+                        await prefsService.saveUserCredentials(
+                          userCredential.user!.uid,
+                          userCredential.user!.email!,
+                        );
+                      }
+                      
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Logged in successfully!')),

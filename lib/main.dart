@@ -12,6 +12,8 @@ import 'profile.dart';
 import 'pills_provider.dart';
 import 'medication_detail.dart';
 import 'edit_medication.dart';
+import 'services/preferences_service.dart';
+import 'services/firebase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -69,7 +71,7 @@ class HealthUpApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      home: const LoginScreen(),
+      home: const SplashScreen(),
       onGenerateRoute: (settings) {
         if (settings.name == '/medication_detail') {
           final medication = settings.arguments as PillData;
@@ -94,6 +96,70 @@ class HealthUpApp extends StatelessWidget {
         '/settings': (context) => const SettingsScreen(),
         '/profile': (context) => const ProfileScreen(),
       },
+      ),
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final prefsService = PreferencesService();
+    final firebaseService = FirebaseService();
+    
+    // Check if user wants to stay logged in and has valid session
+    final stayLoggedIn = await prefsService.getStayLoggedIn();
+    final currentUser = firebaseService.currentUser;
+
+    await Future.delayed(const Duration(seconds: 1)); // Brief splash
+
+    if (mounted) {
+      if (stayLoggedIn && currentUser != null) {
+        // User is already logged in
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      } else {
+        // Clear credentials if stay logged in is false
+        if (!stayLoggedIn) {
+          await prefsService.clearUserCredentials();
+        }
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.health_and_safety, size: 100, color: Color(0xFF4e5ca6)),
+            SizedBox(height: 24),
+            Text(
+              'HealthUp',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF4e5ca6),
+              ),
+            ),
+            SizedBox(height: 24),
+            CircularProgressIndicator(),
+          ],
+        ),
       ),
     );
   }

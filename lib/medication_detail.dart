@@ -115,7 +115,7 @@ class MedicationDetailScreen extends StatelessWidget {
                     await Provider.of<PillsProvider>(context, listen: false)
                         .removePill(medication);
                     if (context.mounted) {
-                      Navigator.pop(context);
+                      Navigator.pushReplacementNamed(context, '/dashboard');
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content: Text('Medication deleted successfully')),

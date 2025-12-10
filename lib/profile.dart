@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'app_bottom_nav.dart';
 import 'services/firebase_service.dart';
+import 'services/preferences_service.dart';
 import 'pills_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseService _firebaseService = FirebaseService();
+  final PreferencesService _prefsService = PreferencesService();
   final ImagePicker _picker = ImagePicker();
   File? _localImage;
 
@@ -431,6 +433,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () async {
                         await _firebaseService.signOut();
+                        await _prefsService.clearUserCredentials();
                         if (context.mounted) {
                           Navigator.pushReplacementNamed(context, '/login');
                         }

@@ -48,6 +48,33 @@ class FirebaseService {
       'frequency': pill.frequency,
       'frequencyValue': pill.frequencyValue,
       'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'isActive': true,
+    });
+  }
+
+  // Add medication with specific ID (for syncing)
+  Future<void> addMedicationWithId(PillData pill) async {
+    if (currentUserId == null) throw Exception('User not authenticated');
+    if (pill.id == null) throw Exception('Medication ID required');
+
+    await _firestore
+        .collection('users')
+        .doc(currentUserId)
+        .collection('medications')
+        .doc(pill.id)
+        .set({
+      'name': pill.name,
+      'type': pill.type,
+      'amount': pill.amount,
+      'duration': pill.duration,
+      'timeHour': pill.time.hour,
+      'timeMinute': pill.time.minute,
+      'startDate': Timestamp.fromDate(pill.startDate),
+      'frequency': pill.frequency,
+      'frequencyValue': pill.frequencyValue,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
       'isActive': true,
     });
   }
@@ -71,6 +98,7 @@ class FirebaseService {
       'startDate': Timestamp.fromDate(pill.startDate),
       'frequency': pill.frequency,
       'frequencyValue': pill.frequencyValue,
+      'updatedAt': FieldValue.serverTimestamp(),
     });
   }
 

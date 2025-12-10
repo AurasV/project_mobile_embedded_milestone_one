@@ -15,7 +15,6 @@ class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
   @override
   void initState() {
     super.initState();
-    // Start listening to Firebase medications
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<PillsProvider>(context, listen: false).listenToMedications();
     });
